@@ -11,7 +11,7 @@ if ( NOT SDL_FOUND )
 endif ( NOT SDL_FOUND )
 
 add_executable(nyanstream
-    src/main.cc
+    src/nyanstream.cc
     )
 link_libraries(
     ${SDL_LIBRARY}
