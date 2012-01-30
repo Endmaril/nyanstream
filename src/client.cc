@@ -20,7 +20,7 @@ void audio_callback(void* userdata, Uint8* stream, int len)
         p[i++] = sample;
     }
     
-    if (i < len)
+    if (i < len / 2)
     {
         if (buffer.getSize() < len/2)
             std::cerr << "Buffer undersized" << std::endl;
@@ -116,13 +116,12 @@ int client(char* argv[])
             &lgdest                                     /* taille espace reserve a dest          */
         );
         
-        std::cout << len << ", free:" << freeSize << std::endl;
-        buffer.print();
+        SDL_LockAudio();
         if (!overflow)
             buffer.write((Uint16*)msg, freeSize);
         else
             std::cerr << "Buffer overflow" << std::endl;
-        buffer.print();
+        SDL_UnlockAudio();
         //memcpy(&sound_buffer[sound_cursor_write], msg, len);
         //sound_cursor_write += len;
     }

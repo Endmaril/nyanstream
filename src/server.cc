@@ -49,7 +49,7 @@ int server(char* argv[])
         fprintf(stderr, "SDL_LoadWAV(%s): %s\n", "data/nyan.wav", SDL_GetError());
         return EXIT_FAILURE;
     }
-    SDL_BuildAudioCVT(&cvt, wave.format, wave.channels, wave.freq, AUDIO_S16, 2, 44100);
+    SDL_BuildAudioCVT(&cvt, wave.format, wave.channels, wave.freq, AUDIO_S16, 1, 44100);
     cvt.buf = (Uint8*)malloc(dlen * cvt.len_mult);
     memcpy(cvt.buf, data, dlen);
     cvt.len = dlen;
