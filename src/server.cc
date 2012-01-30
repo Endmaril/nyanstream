@@ -57,10 +57,10 @@ int server(char* argv[])
 
     std::cout << "Wav is " << dlen << " long" << std::endl;
 
-    for(int i = 0; i < cvt.len; i += 4096)
+    for(int i = 0; i < cvt.len; i += NYAN_BUFFER_SIZE)
     {
         int l;
-        l = sendto(sock1, &data[i], std::min(4096, cvt.len - i), 0, (sockaddr*)&si_client, result->ai_addrlen);
+        l = sendto(sock1, &data[i], std::min(NYAN_BUFFER_SIZE, cvt.len - i), 0, (sockaddr*)&si_client, result->ai_addrlen);
         if(l <= 0)
             perror("sendto");
         SDL_Delay(40);

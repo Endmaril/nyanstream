@@ -49,13 +49,13 @@ int client(char* argv[])
     
     struct sockaddr exp;
     unsigned int lgdest = sizeof(sockaddr);
-    char msg[4096];
+    char msg[NYAN_BUFFER_SIZE];
 
     SDL_AudioSpec desired, obtained;
     desired.freq = 44100;
     desired.format = AUDIO_S16LSB;
     desired.channels = 1; // mono
-    desired.samples = 4096; // 8192 ?
+    desired.samples = NYAN_BUFFER_SIZE;
     desired.callback = audio_callback;
     desired.userdata = NULL;
     if(SDL_OpenAudio(&desired, &obtained) < 0)
