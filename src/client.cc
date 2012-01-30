@@ -114,7 +114,7 @@ int client(char* argv[])
         );
         
         if (!overflow)
-            buffer.write(msg, freeSize);
+            buffer.write((Uint16*)msg, freeSize);
         else
             std::cerr << "Buffer overflow" << std::endl;
         //memcpy(&sound_buffer[sound_cursor_write], msg, len);
