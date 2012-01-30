@@ -28,7 +28,7 @@ public:
 
     void resize(size_t newSize)
     {
-        size = newSize;
+        size = newSize + 1;
         data = new T[size];
         positionWrite = positionRead = 0;
     }
