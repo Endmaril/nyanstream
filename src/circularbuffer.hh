@@ -52,6 +52,35 @@ public:
     {
         return positionRead == positionWrite;
     }
+
+    void read(T* d, size_t n)
+    {
+        for(unsigned int i = 0; i < n; i++)
+            *this >> d[i];
+    }
+
+    void write(T* d, size_t n)
+    {
+        for(unsigned int i = 0; i < n; i++)
+            *this << d[i];
+    }
+
+    size_t getSize()
+    {
+        return size;
+    }
+
+    size_t getFreeSize()
+    {
+        if(positionWrite > positionRead)
+        {
+            return positionWrite - positionRead;
+        }
+        else
+        {
+            return positionWrite + size - positionRead;
+        }
+    }
 };
 
 }
