@@ -1,0 +1,8 @@
+|---------------------- 1337 Octets -----------------------------------|
+[Magic Header 2octets|type 1 octet| Header 34 octets |Data 1300 Octets ]
+
+Magic header: Ox6723
+
+Header:
+|----------------------- 34 Octets ------------------------------------|
+[ id begin 4 octets | longueur 2 octets |       NILL 28 octets         ]
