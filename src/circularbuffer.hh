@@ -2,6 +2,7 @@
 #define __NYAN_CIRCULARBUFFER__
 
 #include "common.hh"
+#include <ostream>
 
 namespace nyanstream
 {
@@ -80,6 +81,11 @@ public:
         {
             return positionWrite + size - positionRead;
         }
+    }
+
+    void print()
+    {
+        std::cout << "size:" << size << ", r:" << positionRead << ", w:" << positionWrite << std::endl;
     }
 };
 

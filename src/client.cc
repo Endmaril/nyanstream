@@ -22,7 +22,7 @@ void audio_callback(void* userdata, Uint8* stream, int len)
     
     if (i < len)
     {
-        std::cerr << "Buffer underrun" << std::endl;
+        //std::cerr << "Buffer underrun" << std::endl;
     }
     
     while (i < len)
@@ -113,10 +113,13 @@ int client(char* argv[])
             &lgdest                                     /* taille espace reserve a dest          */
         );
         
+        std::cout << len << ", free:" << freeSize << std::endl;
+        buffer.print();
         if (!overflow)
             buffer.write((Uint16*)msg, freeSize);
         else
             std::cerr << "Buffer overflow" << std::endl;
+        buffer.print();
         //memcpy(&sound_buffer[sound_cursor_write], msg, len);
         //sound_cursor_write += len;
     }
