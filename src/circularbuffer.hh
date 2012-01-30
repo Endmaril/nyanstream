@@ -10,9 +10,13 @@ class CircularBuffer
 {
 private:
     int size;
+    uint8_t* data;
 
 public:
     CircularBuffer(int size);
+    ~CircularBuffer();
+
+    
 };
 
 }
