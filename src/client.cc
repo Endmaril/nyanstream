@@ -14,11 +14,10 @@ void audio_callback(void* userdata, Uint8* stream, int len)
     Uint16 sample = 0;
     Uint16* p = (Uint16*)stream;
     int i = 0;
-    while (!buffer.isEmpty() && i < len )
+    while (!buffer.isEmpty() && i < len / 2 )
     {
         buffer >> sample;
         p[i++] = sample;
-        i++;
     }
     
     if (i < len)
@@ -29,7 +28,7 @@ void audio_callback(void* userdata, Uint8* stream, int len)
             std::cerr << "Buffer underrun" << std::endl;
     }
     
-    while (i < len)
+    while (i < len / 2)
     {
         p[i++] = 0;
     }

@@ -35,16 +35,23 @@ public:
 
     CircularBuffer& operator<<(T v)
     {
-        data[positionWrite] = v;
-        positionWrite = (positionWrite + 1) % size;
+        size_t newPosition = (positionWrite + 1) % size;
+        if(newPosition != positionRead)
+        {
+            positionWrite = newPosition;
+            data[positionWrite] = v;
+        }
 
         return *this;
     }
 
     CircularBuffer& operator>>(T& v)
     {
-        v = data[positionRead];
-        positionRead = (positionWrite + 1) % size;
+        if(positionRead != positionWrite)
+        {
+            positionRead = (positionRead + 1) % size;
+            v = data[positionRead];
+        }
 
         return *this;
     }
