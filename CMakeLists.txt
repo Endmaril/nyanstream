@@ -12,7 +12,9 @@ endif ( NOT SDL_FOUND )
 
 add_executable(nyanstream
     src/nyanstream.cc
+    src/client.cc src/client.hh
+    src/server.cc src/server.hh
     )
-link_libraries(
+target_link_libraries(nyanstream
     ${SDL_LIBRARY}
 )
