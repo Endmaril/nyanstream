@@ -18,11 +18,15 @@ void audio_callback(void* userdata, Uint8* stream, int len)
     {
         buffer >> sample;
         p[i++] = sample;
+        i++;
     }
     
     if (i < len)
     {
-        std::cerr << "Buffer underrun" << std::endl;
+        if (buffer.getSize() < len/2)
+            std::cerr << "Buffer undersized" << std::endl;
+        else
+            std::cerr << "Buffer underrun" << std::endl;
     }
     
     while (i < len)
