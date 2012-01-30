@@ -1,7 +1,7 @@
 #ifndef __NYAN_CIRCULARBUFFER__
 #define __NYAN_CIRCULARBUFFER__
 
-#include "common.h"
+#include "common.hh"
 
 namespace nyanstream
 {
@@ -17,7 +17,7 @@ private:
 public:
     CircularBuffer(size_t size)
     {
-        resize(newSize);
+        resize(size);
     }
 
     ~CircularBuffer()
@@ -25,7 +25,7 @@ public:
         delete[] data;
     }
 
-    void resize(size_t size)
+    void resize(size_t newSize)
     {
         size = newSize;
         data = new uint8_t[size];
@@ -46,6 +46,11 @@ public:
         positionRead = (positionWrite + 1) % size;
 
         return *this;
+    }
+    
+    bool isEmpty()
+    {
+        return positionRead == positionWrite;
     }
 };
 
