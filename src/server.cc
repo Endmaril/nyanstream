@@ -63,7 +63,7 @@ int server(char* argv[])
         l = sendto(sock1, &data[i], std::min(NYAN_BUFFER_SIZE, cvt.len - i), 0, (sockaddr*)&si_client, result->ai_addrlen);
         if(l <= 0)
             perror("sendto");
-        SDL_Delay(40);
+        SDL_Delay(92);
     }
 
     SDL_FreeWAV(data);

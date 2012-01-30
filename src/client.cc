@@ -7,7 +7,7 @@ namespace nyanstream
 //unsigned int sound_cursor_read = 0;
 //unsigned int sound_cursor_write = 0;
 //Uint8* sound_buffer;
-CircularBuffer<Uint16> buffer(NYAN_BUFFER_SIZE);
+CircularBuffer<Uint16> buffer(44100 * 3);
 
 void audio_callback(void* userdata, Uint8* stream, int len)
 {
@@ -117,10 +117,13 @@ int client(char* argv[])
         );
         
         SDL_LockAudio();
+        std::cout << len / 2 << std::endl;
+        buffer.print();
         if (!overflow)
-            buffer.write((Uint16*)msg, freeSize);
+            buffer.write((Uint16*)msg, len / sizeof(Uint16));
         else
             std::cerr << "Buffer overflow" << std::endl;
+        buffer.print();
         SDL_UnlockAudio();
         //memcpy(&sound_buffer[sound_cursor_write], msg, len);
         //sound_cursor_write += len;
