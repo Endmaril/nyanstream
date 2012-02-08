@@ -4,13 +4,7 @@
 
 namespace nyanstream
 {
-
-<<<<<<< HEAD
-//unsigned int sound_cursor_read = 0;
-//unsigned int sound_cursor_write = 0;
-//Uint8* sound_buffer;
-CircularBuffer<Uint16> buffer(NYAN_BUFFER_SIZE);
-=======
+    
 Client::Client(char* argv[])
     : buffer(44100 * 3), sock1(0), argv(argv)
 {
@@ -20,7 +14,6 @@ void Client::audio_callback(void* userdata, Uint8* stream, int len)
 {
     ((Client*) userdata) -> audio_callback(stream, len);
 }
->>>>>>> e8471af0040ba9deeb08c90b38f5636dac5a998a
 
 void Client::audio_callback(Uint8* stream, int len)
 {
