@@ -31,7 +31,12 @@ int main(int argc, char* argv[])
         nyanstream::Server server(argv);
         res = server.run();
     } else if (strcmp(argv[1], "-c") == 0) {
+<<<<<<< HEAD
         res = nyanstream::client(argv);
+=======
+        nyanstream::Client client(argv);
+        return client.run();
+>>>>>>> e8471af0040ba9deeb08c90b38f5636dac5a998a
     }
     
     return res;
