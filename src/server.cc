@@ -3,23 +3,32 @@
 namespace nyanstream
 {
 
-int server(char* argv[])
+Server::Server(char* argv[3])
 {
-    int sock1 = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock1 == -1)
+    addressServer = argv[2];
+    serverPort = strtol(argv[3], (char**)NULL, 10);
+}
+
+Server::~Server()
+{
+}
+
+int Server::run()
+{
+    socketServer = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socketServer == -1)
     {
         perror("socket");
         return EXIT_FAILURE;
     }
     
-    struct sockaddr_in si_serv;
+    // listen   
+    memset((char *) &siServer, 0, sizeof(siServer));
+    siServer.sin_family = AF_INET;
+    siServer.sin_port = htons(serverPort);
+    siServer.sin_addr.s_addr = htonl(INADDR_ANY);
     
-    memset((char *) &si_serv, 0, sizeof(si_serv));
-    si_serv.sin_family = AF_INET;
-    si_serv.sin_port = htons(1337);
-    si_serv.sin_addr.s_addr = htonl(INADDR_ANY);
-    
-    if (bind(sock1, (sockaddr*)&si_serv, sizeof(si_serv))==-1)
+    if(bind(socketServer, (sockaddr*)&siServer, sizeof(siServer))==-1)
     {
         perror("bind");
         return EXIT_FAILURE;
@@ -27,29 +36,23 @@ int server(char* argv[])
     
     struct addrinfo *result;
     
-    int error = getaddrinfo(argv[2], NULL, NULL, &result);
+    int error = getaddrinfo(addressServer.c_str() , NULL, NULL, &result);
     if(error != 0)
     {
         perror("getaddrinfo");
         return EXIT_FAILURE;
     }
     
-    struct sockaddr_in si_client;
-    memcpy(&si_client, result -> ai_addr, sizeof(si_client));
-    int port = strtol(argv[3], (char**)NULL, 10);
-    si_client.sin_port = htons(port);
-
     // read sound
-    SDL_AudioSpec wave;
     SDL_AudioCVT cvt;
     Uint8* data;
     Uint32 dlen;
-    if(SDL_LoadWAV("data/nyan.wav", &wave, &data, &dlen) == NULL)
+    if(SDL_LoadWAV("data/nyan.wav", &asNyan, &data, &dlen) == NULL)
     {
         fprintf(stderr, "SDL_LoadWAV(%s): %s\n", "data/nyan.wav", SDL_GetError());
         return EXIT_FAILURE;
     }
-    SDL_BuildAudioCVT(&cvt, wave.format, wave.channels, wave.freq, AUDIO_S16, 1, 44100);
+    SDL_BuildAudioCVT(&cvt, asNyan.format, asNyan.channels, asNyan.freq, asNyan.format, 1, asNyan.freq);
     cvt.buf = (Uint8*)malloc(dlen * cvt.len_mult);
     memcpy(cvt.buf, data, dlen);
     cvt.len = dlen;
@@ -57,10 +60,13 @@ int server(char* argv[])
 
     std::cout << "Wav is " << dlen << " long" << std::endl;
 
+    while(!recvNegociation());
+
     for(int i = 0; i < cvt.len; i += NYAN_BUFFER_SIZE)
     {
         int l;
-        l = sendto(sock1, &data[i], std::min(NYAN_BUFFER_SIZE, cvt.len - i), 0, (sockaddr*)&si_client, result->ai_addrlen);
+        //if(rand() % 100 > 20)
+        l = sendto(socketServer, &data[i], std::min(NYAN_BUFFER_SIZE, cvt.len - i), 0, (sockaddr*)&sourceAddress, sizeof(sockaddr_in));
         if(l <= 0)
             perror("sendto");
         SDL_Delay(92);
@@ -69,9 +75,50 @@ int server(char* argv[])
     SDL_FreeWAV(data);
     free(cvt.buf);
 
-    close(sock1);
+    close(socketServer);
     
     freeaddrinfo(result);
+}
+
+bool Server::recvNegociation()
+{
+    uint8_t buffer[NYAN_MESSAGE_SIZE];
+    unsigned int sourceAddressLen = sizeof(sourceAddress);
+
+    // wait for a message
+    ssize_t bufferLen = 0;
+    while(bufferLen < NYAN_MESSAGE_SIZE)
+    {
+        bufferLen += recvfrom(socketServer, &buffer[bufferLen], sizeof(buffer) - bufferLen, 0, &sourceAddress, &sourceAddressLen);
+    }
+    // if asked for streaming
+    if(std::string((const char*)buffer) == "Bonjour, je veux un stream.")
+    {
+        // reply the stream caracterics
+        std::stringstream ss;
+        ss << "Je vais streamer du son WAVE mono, de format " << asNyan.format << " à " << asNyan.freq << " Hz.";
+        std::string str = ss.str();
+        memcpy(buffer, str.c_str(), str.length() + 1);
+
+        if(sendto(socketServer, buffer, sizeof(buffer), 0, &sourceAddress, sourceAddressLen) == -1)
+        {
+            perror("sendto");
+            return false;
+        }
+    }
+
+    // wait for ack
+    bufferLen = 0;
+    while(bufferLen < NYAN_MESSAGE_SIZE)
+    {
+        bufferLen += recvfrom(socketServer, &buffer[bufferLen], sizeof(buffer) - bufferLen, 0, &sourceAddress, &sourceAddressLen);
+    }
+    if(std::string((const char*)buffer) == "Ok j'attends ça avec impatience.")
+    {
+        return true;
+    }
+
+    return false;
 }
 
 }

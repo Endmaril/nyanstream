@@ -15,20 +15,25 @@ void printUsage()
 
 }
 
-int main( int argc, char* argv[]) 
+int main(int argc, char* argv[]) 
 {
     if (argc < 4)
     {
         nyanstream::printUsage();
         return EXIT_SUCCESS;
     }
+
+    SDL_Init(SDL_INIT_AUDIO);
     
+    int res;
+
     if (strcmp(argv[1], "-s") == 0) {
-        return nyanstream::server(argv);
+        nyanstream::Server server(argv);
+        res = server.run();
     } else if (strcmp(argv[1], "-c") == 0) {
-        return nyanstream::client(argv);
+        res = nyanstream::client(argv);
     }
     
-    return EXIT_SUCCESS;
+    return res;
     
 }

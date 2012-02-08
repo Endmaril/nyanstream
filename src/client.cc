@@ -7,7 +7,7 @@ namespace nyanstream
 //unsigned int sound_cursor_read = 0;
 //unsigned int sound_cursor_write = 0;
 //Uint8* sound_buffer;
-CircularBuffer<Uint16> buffer(44100 * 3);
+CircularBuffer<Uint16> buffer(NYAN_BUFFER_SIZE);
 
 void audio_callback(void* userdata, Uint8* stream, int len)
 {
