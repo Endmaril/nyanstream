@@ -26,7 +26,8 @@ int main( int argc, char* argv[])
     if (strcmp(argv[1], "-s") == 0) {
         return nyanstream::server(argv);
     } else if (strcmp(argv[1], "-c") == 0) {
-        return nyanstream::client(argv);
+        nyanstream::Client client(argv);
+        return client.run();
     }
     
     return EXIT_SUCCESS;

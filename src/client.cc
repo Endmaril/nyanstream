@@ -1,15 +1,21 @@
 #include "client.hh"
 #include "circularbuffer.hh"
+#include <sstream>
 
 namespace nyanstream
 {
 
-//unsigned int sound_cursor_read = 0;
-//unsigned int sound_cursor_write = 0;
-//Uint8* sound_buffer;
-CircularBuffer<Uint16> buffer(44100 * 3);
+Client::Client(char* argv[])
+    : buffer(44100 * 3), sock1(0), argv(argv)
+{
+}
 
-void audio_callback(void* userdata, Uint8* stream, int len)
+void Client::audio_callback(void* userdata, Uint8* stream, int len)
+{
+    ((Client*) userdata) -> audio_callback(stream, len);
+}
+
+void Client::audio_callback(Uint8* stream, int len)
 {
     Uint16 sample = 0;
     Uint16* p = (Uint16*)stream;
@@ -48,24 +54,87 @@ void audio_callback(void* userdata, Uint8* stream, int len)
     //}
 }
 
-int client(char* argv[])
+int Client::negociate() 
 {
-    int sock1 = socket(AF_INET, SOCK_DGRAM, 0);
+    struct addrinfo *result;
+    
+    int error = getaddrinfo(argv[2], NULL, NULL, &result);
+    if(error != 0)
+    {
+        perror("getaddrinfo");
+        return EXIT_FAILURE;
+    }
+    
+    struct sockaddr_in si_serveur;
+    memcpy(&si_serveur, result -> ai_addr, sizeof(si_serveur));
+    int port = strtol(argv[3], (char**)NULL, 10);
+    si_serveur.sin_port = htons(port);
+    
+    const char* data = "Bonjour, je veux un stream.";
+    char buff[1337];
+    strcpy(buff, data);
+    sendto(sock1, buff, sizeof(buff), 0, (sockaddr*)&si_serveur, result->ai_addrlen);
+    
+    struct sockaddr exp;
+    unsigned int lgdest = sizeof(sockaddr);
+    
+    int recv = 0;
+    
+    while (recv < sizeof(buff))
+    {    
+        recv += recvfrom(
+            sock1,                                      /* descripteur de la socket de reception */
+            buff,                                       /* adresse de recuperation du message    */
+            sizeof(buff) - recv,                        /* taille de l'espace alloue a msg       */
+            0,                                          /* toujours 0 pour le type SOCK_DGRAM    */
+            &exp,                                       /* pour recuperer l'adr de l'expediteur  */
+            &lgdest                                     /* taille espace reserve a dest          */
+        );
+    }
+    
+    std::string msg(buff);
+    std::stringstream ss(msg);
+    std::string dummy;
+    int format, freq;
+    //ss << "Je vais streamer du son WAVE mono, de format" << obtained.format << " à " << obtained.freq << " Hz.
+    ss >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> format >> dummy >> freq;
+    
+    asDesired.freq = freq;
+    asDesired.format = format;
+    asDesired.channels = 1; // mono
+    asDesired.samples = NYAN_BUFFER_SIZE;
+    asDesired.callback = audio_callback;
+    asDesired.userdata = (void*) this;
+    if(SDL_OpenAudio(&asDesired, &asObtained) < 0)
+    {
+        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+        exit(1);
+    }
+    std::cout << asObtained.freq << std::endl;
+    
+    data = "Ok j'attends ça avec impatience.";
+    strcpy(buff, data);
+    sendto(sock1, buff, sizeof(buff), 0, (sockaddr*)&si_serveur, result->ai_addrlen);
+}
+
+int Client::run()
+{
+    sock1 = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock1 == -1)
     {
         perror("socket");
         return EXIT_FAILURE;
     }
     
-    struct sockaddr_in si_serv;
+    struct sockaddr_in si_listeningPort;
     
-    memset((char *) &si_serv, 0, sizeof(si_serv));
-    si_serv.sin_family = AF_INET;
+    memset((char *) &si_listeningPort, 0, sizeof(si_listeningPort));
+    si_listeningPort.sin_family = AF_INET;
     int port = strtol(argv[3], (char **) NULL, 10);
-    si_serv.sin_port = htons(port);
-    si_serv.sin_addr.s_addr = htonl(INADDR_ANY);
+    si_listeningPort.sin_port = htons(0);
+    si_listeningPort.sin_addr.s_addr = htonl(INADDR_ANY);
     
-    if (bind(sock1, (sockaddr*)&si_serv, sizeof(si_serv))==-1)
+    if (bind(sock1, (sockaddr*)&si_listeningPort, sizeof(si_listeningPort))==-1)
     {
         perror("bind");
         return EXIT_FAILURE;
@@ -74,19 +143,8 @@ int client(char* argv[])
     struct sockaddr exp;
     unsigned int lgdest = sizeof(sockaddr);
 
-    SDL_AudioSpec desired, obtained;
-    desired.freq = 44100;
-    desired.format = AUDIO_S16LSB;
-    desired.channels = 1; // mono
-    desired.samples = NYAN_BUFFER_SIZE;
-    desired.callback = audio_callback;
-    desired.userdata = NULL;
-    if(SDL_OpenAudio(&desired, &obtained) < 0)
-    {
-        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-        exit(1);
-    }
-    std::cout << obtained.freq << std::endl;
+    negociate();
+    
     //TODO: BuildCVT
 
     //sound_buffer = new Uint8[128 * 1024 * 1024];
