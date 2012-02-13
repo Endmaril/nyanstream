@@ -23,14 +23,13 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
-    SDL_Init(SDL_INIT_AUDIO);
-    
     int res;
 
     if (strcmp(argv[1], "-s") == 0) {
         nyanstream::Server server(argv);
         res = server.run();
     } else if (strcmp(argv[1], "-c") == 0) {
+        SDL_Init(SDL_INIT_AUDIO);
         nyanstream::Client client(argv);
         return client.run();
     }
