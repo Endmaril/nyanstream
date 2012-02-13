@@ -31,10 +31,11 @@ public:
         size_t nSamples = cvt.len / sampleSize;
         float sendDelay = 1.0f / ((float)sampleSize * (float)asNyan.freq / (float)NYAN_MESSAGE_DATA_SIZE);
         size_t nSamplePerMessage = NYAN_MESSAGE_DATA_SIZE / sampleSize;
-        size_t cnt1 = 0;
 
         for(size_t i = 0; i < nSamples; i += nSamplePerMessage)
         {
+            size_t cnt1 = i / (44100 * 3),
+                   cnt2 = i % (44100 * 3);
             // prepare message
             char message[NYAN_MESSAGE_SIZE];
             memset(message, 0, sizeof(message));
@@ -42,7 +43,7 @@ public:
 
             // header
             std::stringstream ss;
-            ss << "NYAN " << cnt1 << " " << i << " " << nSamplesMessage;
+            ss << "NYAN " << cnt1 << " " << cnt2 << " " << nSamplesMessage;
             std::string strHeader(ss.str());
             assert(strHeader.length() < NYAN_MESSAGE_HEADER_SIZE);
             memcpy(message, strHeader.c_str(), strHeader.length() + 1);
