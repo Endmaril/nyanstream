@@ -44,8 +44,6 @@ int Server::run()
     }
     
     // read sound
-    SDL_AudioCVT cvt;
-    Uint8* data;
     Uint32 dlen;
     if(SDL_LoadWAV("data/nyan.wav", &asNyan, &data, &dlen) == NULL)
     {
@@ -62,30 +60,22 @@ int Server::run()
 
     while(!recvNegociation());
 
-    Uint32 sample_size;
     switch(asNyan.format)
     {
     case AUDIO_U8:
+        serverLoop<Uint8>();
+        break;
     case AUDIO_S8:
-        sample_size = 1;
+        serverLoop<Sint8>();
         break;
-    case AUDIO_U16:
     case AUDIO_U16LSB:
-    case AUDIO_S16:
-    case AUDIO_S16LSB:
     case AUDIO_U16MSB:
-    case AUDIO_S16MSB:
-        sample_size = 2;
+        serverLoop<Uint16>();
         break;
-    }
-    float delay = 1.0f / (2.0f * (float)asNyan.freq / (float)NYAN_BUFFER_SIZE);
-    for(int i = 0; i < cvt.len; i += NYAN_BUFFER_SIZE)
-    {
-        int l = sendto(socketServer, &data[i], std::min(NYAN_BUFFER_SIZE, cvt.len - i), 0, (sockaddr*)&sourceAddress, sizeof(sockaddr_in));
-        if(l <= 0)
-            perror("sendto");
-
-        SDL_Delay((Uint32)delay);
+    case AUDIO_S16LSB:
+    case AUDIO_S16MSB:
+        serverLoop<Sint16>();
+        break;
     }
 
     SDL_FreeWAV(data);
