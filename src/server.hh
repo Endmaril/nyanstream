@@ -31,7 +31,6 @@ public:
         size_t nSamples = cvt.len / sampleSize;
         float sendDelay = 1.0f / ((float)sampleSize * (float)asNyan.freq / (float)NYAN_BUFFER_SIZE);
         size_t nSamplePerMessage = NYAN_MESSAGE_DATA_SIZE / sampleSize;
-        std::cout << nSamplePerMessage << std::endl;
         size_t cnt1 = 0;
 
         for(size_t i = 0; i < nSamples; i += nSamplePerMessage)
