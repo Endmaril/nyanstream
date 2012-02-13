@@ -3,14 +3,15 @@ template<class T>
 class Packet
 {
     private:
-        T data;
+        T* data;
         std::pair<size_t, size_t> position;
+        size_t nData;
     
     public:
-        Packet(T data, size_t nBuffPos, size_t posInBuff) : 
+        Packet(T* data, std::pair<size_t,size_t> position, size_t nData) : 
             data(data),
-            nBuffPos(nBuffPos),
-            posInBuff(posInBuff)
+            position(position),
+            nData(nData)
         {
         }
         
@@ -19,8 +20,13 @@ class Packet
             return position;
         }
         
-        T getData()
+        T* getData()
         {
             return data;
         }
-}
+        
+        size_t getNData()
+        {
+            return nData;
+        }
+};

@@ -69,9 +69,7 @@ int Server::run()
     case AUDIO_S8:
         sample_size = 1;
         break;
-    case AUDIO_U16:
     case AUDIO_U16LSB:
-    case AUDIO_S16:
     case AUDIO_S16LSB:
     case AUDIO_U16MSB:
     case AUDIO_S16MSB:
