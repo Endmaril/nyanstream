@@ -2,6 +2,7 @@
 #define __NYAN_CIRCULARBUFFER__
 
 #include "common.hh"
+#include "Packet.hh"
 #include <ostream>
 
 namespace nyanstream
@@ -13,10 +14,11 @@ class CircularBuffer
 private:
     size_t size;
     T* data;
-    size_t positionWrite, positionRead;
+    T defaultValue;
+    std::pair<size_t, size_t> positionRead;
 
 public:
-    CircularBuffer(size_t size)
+    CircularBuffer(size_t size, T defaultValue) : defaultValue(defaultValue)
     {
         resize(size);
     }
@@ -28,37 +30,65 @@ public:
 
     void resize(size_t newSize)
     {
-        size = newSize + 1;
+        //~ if (data != NULL)
+            //~ delete[] data;
+        size = newSize;
         data = new T[size];
-        positionWrite = positionRead = 0;
+        for (size_t i = 0; i < size; i++)
+        {
+            data[i] = defaultValue;
+        }
+        positionRead = std::pair<size_t, size_t>(0,0);
     }
 
-    CircularBuffer& operator<<(T v)
+    CircularBuffer& operator<<(Packet<T> packet)
     {
-        size_t newPosition = (positionWrite + 1) % size;
-        if(newPosition != positionRead)
+        std::pair<size_t, size_t> packetPosition = packet.getPosition();
+        if (packetPosition.second >= size)
+            return *this;
+        
+        if(packetPosition.first - positionRead.first == 0 && packetPosition.second >= positionRead.second)
         {
-            positionWrite = newPosition;
-            data[positionWrite] = v;
+            T* packetData = packet.getData();
+            data[packetPosition.second] = packetData[0];
+            
+            for (int i = packetPosition.second + 1, j = 1; 
+                 i != positionRead.second && j < packet.getNData(); 
+                 i = (i+1) % size, j++)
+            {
+                data[i] = packetData[j];
+            }
         }
-
+        
+        if(packetPosition.first - positionRead.first == 1 && packetPosition.second < positionRead.second)
+        {
+            T* packetData = packet.getData();
+            for (int i = packetPosition.second, j = 0; 
+                 i != positionRead.second && j < packet.getNData(); 
+                 i = (i+1) % size, j++)
+            {
+                data[i] = packetData[j];
+            }
+        }
         return *this;
     }
 
     CircularBuffer& operator>>(T& v)
     {
-        if(positionRead != positionWrite)
+        v = data[positionRead.second];
+        data[positionRead.second] = defaultValue;
+        positionRead.second = (positionRead.second + 1);
+        if (positionRead.second == size)
         {
-            positionRead = (positionRead + 1) % size;
-            v = data[positionRead];
+            positionRead.first ++;
         }
-
+        positionRead.second %= size;
         return *this;
     }
     
-    bool isEmpty()
+    std::pair<size_t, size_t> getReadPos()
     {
-        return positionRead == positionWrite;
+        return positionRead;
     }
 
     void read(T* d, size_t n)
@@ -67,7 +97,7 @@ public:
             *this >> d[i];
     }
 
-    void write(T* d, size_t n)
+    void write(Packet<T>* d, size_t n)
     {
         for(unsigned int i = 0; i < n; i++)
             *this << d[i];
@@ -78,21 +108,9 @@ public:
         return size;
     }
 
-    size_t getFreeSize()
-    {
-        if(positionWrite > positionRead)
-        {
-            return positionWrite - positionRead;
-        }
-        else
-        {
-            return positionWrite + size - positionRead;
-        }
-    }
-
     void print()
     {
-        std::cout << "size:" << size << ", r:" << positionRead << ", w:" << positionWrite << std::endl;
+        std::cout << "size:" << size << ", r:" << positionRead.second << std::endl;
     }
 };
 
