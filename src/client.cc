@@ -23,6 +23,7 @@ void Client::audio_callback(Uint8* stream, int len)
     {
         buffer >> sample;
         p[i++] = sample;
+        //std::cout << sample << std::endl;
     }
 }
 
@@ -116,7 +117,9 @@ int Client::run()
     struct sockaddr exp;
     unsigned int lgdest = sizeof(sockaddr);
 
+    std::cout << "negociation begin" << std::endl;
     negociate();
+    std::cout << "negociation end" << std::endl;
 
     //TODO: BuildCVT
 
@@ -129,13 +132,15 @@ int Client::run()
     {
     case AUDIO_U8:
     case AUDIO_S8:
-        receiveLoop<Uint8>(0);
+        std::cout << "8 bit sound" << std::endl;
+        receiveLoop<Uint8>(sock1);
         break;
     case AUDIO_U16LSB:
     case AUDIO_S16LSB:
     case AUDIO_U16MSB:
     case AUDIO_S16MSB:
-        receiveLoop<Uint16>(0);
+        std::cout << "16 bit sound" << std::endl;
+        receiveLoop<Uint16>(sock1);
         break;
     }
 

@@ -30,8 +30,8 @@ public:
 
     void resize(size_t newSize)
     {
-        if (data != NULL)
-            delete[] data;
+        //~ if (data != NULL)
+            //~ delete[] data;
         size = newSize;
         data = new T[size];
         for (size_t i = 0; i < size; i++)
@@ -44,32 +44,45 @@ public:
     CircularBuffer& operator<<(Packet<T> packet)
     {
         std::pair<size_t, size_t> packetPosition = packet.getPosition();
-        if((packetPosition.first - positionRead.first == 1 && packetPosition.second <= positionRead.second) ||
-           (packetPosition.first - positionRead.first == 0 && packetPosition.second > positionRead.second))
+        if (packetPosition.second >= size)
+            return *this;
+        
+        if(packetPosition.first - positionRead.first == 0 && packetPosition.second >= positionRead.second)
         {
             T* packetData = packet.getData();
-            for (int i = packetPosition.second, j = 0; 
-                 i != positionRead.first + 1 && j < packet.getNData(); 
+            data[packetPosition.second] = packetData[0];
+            
+            for (int i = packetPosition.second + 1, j = 1; 
+                 i != positionRead.second && j < packet.getNData(); 
                  i = (i+1) % size, j++)
             {
                 data[i] = packetData[j];
             }
         }
-
+        
+        if(packetPosition.first - positionRead.first == 1 && packetPosition.second < positionRead.second)
+        {
+            T* packetData = packet.getData();
+            for (int i = packetPosition.second, j = 0; 
+                 i != positionRead.second && j < packet.getNData(); 
+                 i = (i+1) % size, j++)
+            {
+                data[i] = packetData[j];
+            }
+        }
         return *this;
     }
 
     CircularBuffer& operator>>(T& v)
     {
+        v = data[positionRead.second];
+        data[positionRead.second] = defaultValue;
         positionRead.second = (positionRead.second + 1);
         if (positionRead.second == size)
         {
             positionRead.first ++;
         }
         positionRead.second %= size;
-        v = data[positionRead.second];
-        data[positionRead.second] = defaultValue;
-        
         return *this;
     }
     

@@ -27,9 +27,9 @@ namespace nyanstream
                 while(1)
                 {
                     Packet<Uint16> packet = retreivePacket<Uint16>(sock1);
-                    if (packet.getNData() == 0)
+                    if (packet.getNData() == 0) {
                         continue;
-                    
+                    }
                     SDL_LockAudio();
                     
                     buffer << packet;
@@ -69,7 +69,7 @@ namespace nyanstream
                 if (dummy != "NYAN")
                 {
                     return Packet<T>(NULL, std::pair<size_t, size_t>(0,0), 0);
-                }   
+                }
                 T data[nData * sizeof(T)];
                 memcpy(data, &buffer[NYAN_MESSAGE_HEADER_SIZE], sizeof(data));
                 return Packet<T>(data, std::pair<size_t, size_t>(numBuff,posInBuff), nData);
