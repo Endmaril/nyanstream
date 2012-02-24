@@ -29,7 +29,7 @@ public:
         T* samples = (T*)data;
         int sampleSize = sizeof(T);
         size_t nSamples = cvt.len / sampleSize;
-        float sendDelay = 1.0f / ((float)sampleSize * (float)asNyan.freq / (float)NYAN_MESSAGE_DATA_SIZE);
+        float sendDelay = 1.0f / ((float)sampleSize * (float)asNyan.freq / (float)NYAN_MESSAGE_DATA_SIZE) * 0.5;
         size_t nSamplePerMessage = NYAN_MESSAGE_DATA_SIZE / sampleSize;
 
         for(size_t i = 0; i < nSamples; i += nSamplePerMessage)

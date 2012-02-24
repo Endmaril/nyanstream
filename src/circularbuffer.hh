@@ -38,7 +38,7 @@ public:
         {
             data[i] = defaultValue;
         }
-        positionRead = std::pair<size_t, size_t>(0,0);
+        positionRead = std::pair<size_t, size_t>(-1,size * 80 / 100);
     }
 
     CircularBuffer& operator<<(Packet<T> packet)
